@@ -8,7 +8,8 @@ import csv
 import re
 from datetime import datetime
 from statsmodels.stats.proportion import proportions_ztest, confint_proportions_2indep
-from scipy.stats import norm  # CORREÇÃO: import direto de norm
+from scipy.stats import norm
+import os
 
 app = Flask(__name__)
 df = None
@@ -121,7 +122,6 @@ def analyze():
         aov_diff = aov[1] - aov[0]
         real_additional_value = increased_orders * aov_diff
 
-        # Estimativa de tempo restante
         days_to_significance = 'N/A'
         if start_date_str:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
@@ -173,5 +173,7 @@ def update_chart():
     except Exception as e:
         return {"error": str(e)}, 500
 
+# ✅ Bloco final atualizado para funcionar no Render
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
