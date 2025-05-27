@@ -80,6 +80,8 @@ def analyze():
         selected_metric = request.form.get('metric', 'Visitors')
         chart_type = request.form.get('chart_type', 'pie')
         significance_level = float(request.form.get('significance_level', '0.05'))
+        ci_method = request.form.get('ci_method', 'wald')
+        test_power = float(request.form.get('test_power', '0.8'))
 
         rows = list(csv.reader(data.strip().splitlines(), delimiter='\t'))
         if len(rows) < 2:
@@ -105,10 +107,9 @@ def analyze():
         pval, zstat = proportions_ztest([conv_a, conv_b], [n_a, n_b], alternative='two-sided')
         pval = round(abs(pval), 6)
         zstat = round(zstat, 2)
-
         is_significant = pval < significance_level
 
-        ci_low, ci_upp = confint_proportions_2indep(conv_a, n_a, conv_b, n_b, method='wald')
+        ci_low, ci_upp = confint_proportions_2indep(conv_a, n_a, conv_b, n_b, method=ci_method)
         ci_low = round(ci_low * 100, 2)
         ci_upp = round(ci_upp * 100, 2)
 
@@ -130,7 +131,7 @@ def analyze():
                 total_visitors = n_a + n_b
                 daily_visitors = total_visitors / days_elapsed
 
-                z_crit = abs(norm.ppf(significance_level / 2)) + abs(norm.ppf(0.8))
+                z_crit = abs(norm.ppf(significance_level / 2)) + abs(norm.ppf(test_power))
                 min_required_visitors = (z_crit ** 2) * (cr_a * (1 - cr_a) + cr_b * (1 - cr_b)) / (cr_b - cr_a) ** 2
                 visitors_remaining = max(min_required_visitors - total_visitors, 0)
                 estimated_days_left = visitors_remaining / daily_visitors if daily_visitors > 0 else 'N/A'
@@ -168,12 +169,11 @@ def update_chart():
         if chart_type == "table":
             return {"chart": chart}
         else:
-            return {"chart": f'<img src="data:image/png;base64,{chart}" class="chart-img" alt="Chart">'}
+            return {"chart": f'<img src="data:image/png;base64,{chart}" class="chart-img" alt="Chart'>"}
 
     except Exception as e:
         return {"error": str(e)}, 500
 
-# ✅ Bloco final atualizado para funcionar no Render
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
