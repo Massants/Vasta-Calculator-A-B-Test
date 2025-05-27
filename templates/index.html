@@ -140,7 +140,6 @@
                 flex-direction: column;
             }
         }
-
     </style>
 </head>
 <body>
@@ -156,9 +155,22 @@
 
     <label for="significance_level">Select Significance Level:</label>
     <select name="significance_level">
-        <option value="0.15" {% if significance_level == "0.15" %}selected{% endif %}>85%</option>
-        <option value="0.10" {% if significance_level == "0.10" %}selected{% endif %}>90%</option>
-        <option value="0.05" {% if significance_level == "0.05" %}selected{% endif %}>95%</option>
+        <option value="0.15">85%</option>
+        <option value="0.10">90%</option>
+        <option value="0.05" selected>95%</option>
+    </select>
+
+    <label for="ci_method">Confidence Interval Method:</label>
+    <select name="ci_method">
+        <option value="wald">Wald</option>
+        <option value="score">Score</option>
+    </select>
+
+    <label for="test_power">Power Level (for significance estimation):</label>
+    <select name="test_power">
+        <option value="0.8">80%</option>
+        <option value="0.85">85%</option>
+        <option value="0.9">90%</option>
     </select>
 
     <button class="cta-button" type="submit">Analyze</button>
@@ -186,7 +198,6 @@
                 <tr><th>Estimated Additional Value</th><td>${{ stats.real_additional_value }}</td></tr>
             </table>
         </div>
-    
 
         <div class="container-2">
             <div class="selection-container">
@@ -226,9 +237,6 @@
 </div>
 
 <script>
-    document.getElementById('metricSelect').addEventListener('change', updateChart);
-    document.getElementById('viewSelect').addEventListener('change', updateChart);
-
     function updateChart() {
         const metric = document.getElementById('metricSelect').value;
         const view = document.getElementById('viewSelect').value;
@@ -245,31 +253,27 @@
         .catch(error => console.error('Error updating chart:', error));
     }
 
-    // Função para exportar gráfico como PNG
     function exportToPNG() {
-        const imgData = document.querySelector('.chart-img').src; // Pegando o gráfico em base64
+        const imgData = document.querySelector('.chart-img').src;
         const a = document.createElement('a');
         a.href = imgData;
         a.download = 'chart.png';
         a.click();
     }
 
-    // Função para exportar tabela como CSV
     function exportToCSV() {
         const table = document.querySelector('.styled-table');
         const rows = table.querySelectorAll('tr');
-        
         let csvContent = '';
-        
         rows.forEach(row => {
             const cols = row.querySelectorAll('td, th');
             const rowData = [];
             cols.forEach(col => {
                 rowData.push(col.innerText);
             });
-            csvContent += rowData.join(',') + '\n';
+            csvContent += rowData.join(',') + '\\n';
         });
-        
+
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         if (link.download !== undefined) {
