@@ -166,6 +166,11 @@ def update_chart():
         chart_type = request.form.get('chart_type', 'pie')
         chart = generate_charts(df, selected_metric, chart_type)
 
+        if chart_type == "table":
+            return {"chart": chart}
+        else:
+            return {"chart": f'<img src="data:image/png;base64,{chart}" class="chart-img" alt="Chart">'}
+
     except Exception as e:
         return {"error": str(e)}, 500
 
